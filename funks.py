@@ -36,4 +36,4 @@ def data_extractor(msg:str) -> dict :
 
         except AttributeError as e:
                 print(f"Error extracting data: {e}")
-        return None
+        return {}
