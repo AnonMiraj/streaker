@@ -37,3 +37,29 @@ def data_extractor(msg: str) -> dict:
     except AttributeError as e:
         print(f"Error extracting data: {e}")
     return {}
+
+
+def checkisinstance(embed, title, value_title, obj, objx):
+    """
+    Add fields to the given embed based on the type of obj.
+
+    Parameters:
+    - embed (discord.Embed): The embed to which fields are added.
+    - title (str): The title for the field.
+    - value_title (str): The title for the value field (used when obj is a tuple).
+    - obj: The object to check and add fields based on its type.
+    - objx: The expected type of obj.
+
+    Returns:
+    - discord.Embed: The updated embed with added fields.
+    """
+    if not isinstance(obj, objx):
+        # If obj is not of the expected type, set a default value
+        obj = "missing data, try again later"
+        embed.add_field(name=title, value=obj)
+    else:
+        # If obj is a tuple, add fields for the value and additional information
+        embed.add_field(name=title, value=obj[1])
+        embed.add_field(name=value_title, value=obj[2])
+
+    return embed
