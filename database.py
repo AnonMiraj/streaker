@@ -218,6 +218,7 @@ class Stats:
 
         return cur.fetchone()
 
+    @staticmethod
     def highest_problems_solver():
         # Connect to the database
         conn = sqlite3.connect("trainee.db")
@@ -233,3 +234,23 @@ class Stats:
         )
 
         return cur.fetchone()
+
+    @staticmethod
+    def top_ten():
+        # Connect to the database
+        conn = sqlite3.connect("trainee.db")
+        cur = conn.cursor()
+
+        # get the highest streaker
+
+        cur.execute(
+            """
+            SELECT ROW_NUMBER() OVER(ORDER BY highest_streak DESC, total_problems DESC) AS row_number,
+              discord_name,
+              total_problems,
+              highest_streak
+            FROM trainees
+            ORDER BY highest_streak DESC, total_problems DESC
+            """
+        )
+        return cur.fetchall()
