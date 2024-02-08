@@ -1,9 +1,8 @@
 import discord
 import os
 from dotenv import load_dotenv
-from funks import data_extractor, checkisinstance
-from database import add_record, create_tables_if_not_exist, Stats
-import datetime
+from funks import data_extractor
+from database import add_record, create_tables_if_not_exist
 
 load_dotenv()
 bot = discord.Bot()
@@ -59,60 +58,7 @@ async def archive(ctx):
     await ctx.send("Channel archived. Check database")
 
 
-# TODO on message event for that channle that adds to the csv
-# and if an edit happend it also edit the csv
-
-
-@bot.slash_command()
-async def stats(ctx: discord.ApplicationContext):
-    # Defer the response while fetching data to not timeout
-    await ctx.defer()
-
-    # Create an embed to display stats
-    embed = discord.Embed(
-        title=f"Streaker {ctx.guild.name} stats", color=discord.Colour.blurple()
-    )
-
-    # Fetch and add data for the top streaker
-    top_streaker = Stats.highest_streaker()
-    embed = checkisinstance(
-        embed=embed,
-        title="Top Streaker",
-        value_title="streaks",
-        obj=top_streaker,
-        objx=tuple,
-    )
-
-    embed.add_field(name="-", value="", inline=False)
-
-    # Fetch and add data for the highest current streaker
-    highest_current_streaker = Stats.highest_current_streaker()
-    embed = checkisinstance(
-        embed=embed,
-        title="Top current Streaker",
-        value_title="streaks",
-        obj=highest_current_streaker,
-        objx=tuple,
-    )
-
-    embed.add_field(name="-", value="", inline=False)
-
-    # Fetch and add data for the highest problems solver
-    highest_problems_solver = Stats.highest_problems_solver()
-    embed = checkisinstance(
-        embed=embed,
-        title="most problems sovled",
-        value_title="problems solved",
-        obj=highest_problems_solver,
-        objx=tuple,
-    )
-
-    # Set a footer with a competition invitation URL
-    embed.set_footer(text="compete with us on https://streaker.com (example url)")
-
-    # Send the embed as a response
-    await ctx.followup.send(embed=embed)
-
 
 create_tables_if_not_exist()
+bot.load_extension('cogs.stats')
 bot.run(os.getenv("TOKEN"))
