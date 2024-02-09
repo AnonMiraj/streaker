@@ -23,25 +23,14 @@ def create_triggers(cur):
                     AFTER INSERT ON trainee_records
                     BEGIN
                         UPDATE trainees
-                        SET current_streak = current_streak + 1
+                        SET current_streak = NEW.current_streak
                         WHERE trainees.discord_id = NEW.discord_id
-                        AND NEW.streak > 0;
+                        AND NEW.streak >= 0;
                     END
                 """
     )
 
-    # Create trigger to handle broken streak
-    cur.execute(
-        """CREATE TRIGGER IF NOT EXISTS handle_broken_streak
-                    AFTER INSERT ON trainee_records
-                    BEGIN
-                        UPDATE trainees
-                        SET current_streak = 0
-                        WHERE trainees.discord_id = NEW.discord_id
-                        AND NEW.streak = 0;
-                    END
-                """
-    )
+
 
     # Create trigger to update total_days
     cur.execute(
@@ -230,13 +219,14 @@ class Stats:
                 from trainees 
                 ORDER BY 
                 total_problems DESC 
-                LIMIT 1"""
+                LIMIT 1
+            """
         )
 
         return cur.fetchone()
 
     @staticmethod
-    def top_ten():
+    def top_ten(amount=10):
         # Connect to the database
         conn = sqlite3.connect("trainee.db")
         cur = conn.cursor()
@@ -251,6 +241,7 @@ class Stats:
               highest_streak
             FROM trainees
             ORDER BY highest_streak DESC, total_problems DESC
+            LIMIT ?
             """
-        )
+        ,(str(amount),))
         return cur.fetchall()

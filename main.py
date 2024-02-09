@@ -23,17 +23,21 @@ async def on_ready():
 
 # TODO make this auto_mode thingy work
 
+allowed_users = [445594139506245635,1202346286330683432,1201245946265219092]  
 
 @bot.slash_command()
 async def archive(ctx):
+    if ctx.author.id not in allowed_users:
+        await ctx.send("Sorry, you are not allowed to use this command.",delete_after=25)
+        return
+
     channel = ctx.channel
 
     async with ctx.typing():
         messages_data = []
         async for message in channel.history(limit=None):
             message: discord.Message = message
-            data = data_extractor(str(message.content))
-            print(data)
+            data = data_extractor(str(message.content).upper())
             if data.get("streak") is not None:
                 messages_data.append(
                     [
@@ -45,9 +49,12 @@ async def archive(ctx):
                         data["today"],
                     ]
                 )
+            else:
+                print(message.author.name)
+                print(message.content)
+                print(data)
 
-        for record in messages_data:
-            print(record)
+        for record in reversed(messages_data):
             add_record(record)
 
         """
@@ -55,7 +62,7 @@ async def archive(ctx):
 
             [the discord id of the author ||  the discord name of the author        ||  the raw string content of the message ||  the date of the message in [YYYY-MM-DD] format || the streak of the user || days of the user ||  problems he solved ||  how many he solved in that day
             """
-    await ctx.send("Channel archived. Check database")
+    await ctx.send("Channel archived. Check database",ephemeral=1)
 
 
 

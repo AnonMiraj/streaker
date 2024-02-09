@@ -14,13 +14,13 @@ class stats(commands.Cog):  # create a class for our cog that inherits from comm
         self.bot = bot
 
     @discord.slash_command()
-    async def top(self, ctx: discord.ApplicationContext):
+    async def top(self, ctx: discord.ApplicationContext, amonut:int=10 ):
 
 
         async with ctx.typing():
             # Header for the table
-            headers = ["RANK", "MEMVER", "PROBLEMS", "STREAK"]
-            stat10 = tabulate(Stats.top_ten(), headers=headers, tablefmt="double_grid")
+            headers = ["RANK", "MEMVER", "PROBLEMS", "STREAK","DAYS"]
+            stat10 = tabulate(Stats.top_ten(amonut), headers=headers, tablefmt="double_grid")
 
             embed = discord.Embed(
             title=f"leader boards",
@@ -37,7 +37,7 @@ class stats(commands.Cog):  # create a class for our cog that inherits from comm
 
         # Create an embed to display stats
         embed = discord.Embed(
-            title=f"Streaker {ctx.guild.name} stats", color=discord.Colour.blurple()
+            title=f"Streaker stats", color=discord.Colour.blurple()
         )
 
         # Fetch and add data for the top streaker
