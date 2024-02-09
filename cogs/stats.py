@@ -3,6 +3,7 @@ from discord.ext import commands
 from database import Stats
 from tabulate import tabulate
 from funks import checkisinstance
+import matplotlib.pyplot as plt
 
 
 class stats(commands.Cog):  # create a class for our cog that inherits from commands.Cog
@@ -29,6 +30,65 @@ class stats(commands.Cog):  # create a class for our cog that inherits from comm
             )
 
         await ctx.send(embed=embed)
+
+
+    @discord.slash_command()
+    async def graph(self, ctx: discord.ApplicationContext, amount: int = 10):
+        try:
+            if amount <= 0:
+                await ctx.send("Please specify a positive number for the amount.")
+                return
+    
+            async with ctx.typing():
+                # Create a bar chart
+                _, ax = plt.subplots()
+    
+                top_trainees = Stats.top_ten(amount)
+    
+                # Extract data for plotting
+                members = [row[1] for row in top_trainees]
+                problems_solved = [row[2] for row in top_trainees]
+                streaks = [row[3] for row in top_trainees]
+    
+                # Plotting streaks
+                ax.bar(members, streaks, label='Streak', color='blue')
+    
+                # Plotting problems solved on the second y-axis
+                ax2 = ax.twinx()
+                ax2.plot(members, problems_solved, label='Problems Solved', color='green', marker='o')
+    
+                # Adding labels and title
+                ax.set_xlabel('Trainee')
+                ax.set_ylabel('Streak', color='blue')
+                ax2.set_ylabel('Problems Solved', color='green')
+                ax.set_title('Leaderboard')
+    
+                # Set appropriate axis limits
+                ax.set_ylim(0, max(streaks) * 1.2)
+                ax2.set_ylim(0, max(problems_solved) * 1.2)
+    
+    
+                # Combine legends
+                lines, labels = ax.get_legend_handles_labels()
+                lines2, labels2 = ax2.get_legend_handles_labels()
+                ax.legend(lines + lines2, labels + labels2, loc='upper right')
+    
+    
+                plt.xticks(rotation=90)  # Rotate x-axis labels for better readability
+
+                plt.tight_layout()  # Adjust layout to prevent overlap
+                # Save the plot
+                plt.savefig('plot.png')
+                # Close the plot to release resources
+                plt.close()
+    
+            # Send the file as an attachment
+            with open('plot.png', 'rb') as file:
+                await ctx.send(file=discord.File(file, 'plot.png'))
+    
+        except Exception as e:
+            await ctx.send(f"An error occurred: {e}")
+
 
     @discord.slash_command()
     async def stats(self, ctx: discord.ApplicationContext):
