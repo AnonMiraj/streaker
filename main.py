@@ -2,7 +2,7 @@ import discord
 import os
 from dotenv import load_dotenv
 from funks import data_extractor
-from database import add_record, create_tables_if_not_exist
+from database import add_trainee, add_record
 
 load_dotenv()
 bot = discord.Bot()
@@ -23,15 +23,18 @@ async def on_ready():
 
 # TODO make this auto_mode thingy work
 
-allowed_users = [445594139506245635,1202346286330683432,1201245946265219092]  
+allowed_users = [445594139506245635, 1202346286330683432, 1201245946265219092]
+
 
 @bot.slash_command()
 async def archive(ctx):
     if ctx.author.id not in allowed_users:
-        await ctx.send("Sorry, you are not allowed to use this command.",delete_after=25)
+        await ctx.send("Sorry, you are not allowed to use this command.", delete_after=25)
         return
 
     channel = ctx.channel
+
+    api_key = os.getenv("API")
 
     async with ctx.typing():
         messages_data = []
@@ -39,33 +42,26 @@ async def archive(ctx):
             message: discord.Message = message
             data = data_extractor(str(message.content).upper())
             if data.get("streak") is not None:
-                messages_data.append(
-                    [
-                        str(message.author.id),
-                        message.author.name,
-                        message.created_at.strftime("%Y-%m-%d"),
-                        message.content,
-                        data["streak"],
-                        data["today"],
-                    ]
-                )
-            else:
-                print(message.author.name)
-                print(message.content)
-                print(data)
+                record_data = {
+                    "discord_id": str(message.author.id),
+                    "post_date": message.created_at.isoformat(),
+                    "message": message.content,
+                    "streak": data["streak"],
+                    "today_problems": data["today"],
+                }
+                messages_data.append(record_data)
+                if data["streak"] == 0:
+                    trainee_data = {
+                        "discord_id": str(message.author.id),
+                        "discord_pfp": str(message.author.display_avatar.url),
+                        "discord_name": message.author.name
+                    }
+                    add_trainee(trainee_data, api_key)
 
         for record in reversed(messages_data):
-            add_record(record)
+            add_record(record, api_key)
 
-        """
-            [discord_id                       discord_name                             message                                   message date                                      streak                    days                problems             practiced_day
+    await ctx.send("Channel archived. Check database")
 
-            [the discord id of the author ||  the discord name of the author        ||  the raw string content of the message ||  the date of the message in [YYYY-MM-DD] format || the streak of the user || days of the user ||  problems he solved ||  how many he solved in that day
-            """
-    await ctx.send("Channel archived. Check database",ephemeral=1)
-
-
-
-create_tables_if_not_exist()
-bot.load_extension('cogs.stats')
+# bot.load_extension('cogs.stats')
 bot.run(os.getenv("TOKEN"))
