@@ -1,5 +1,6 @@
-import requests
+import logging
 import json
+import requests
 
 
 def add_trainee(data, api_key):
@@ -10,12 +11,18 @@ def add_trainee(data, api_key):
         "discord_name": ""
     }
     """
+
     headers = {
         'authorization': f'Api-Key {api_key}',
         'Content-Type': 'application/json'
-
     }
-    print(requests.post("https://streaker.api.almiraj.xyz/trainees/", data=json.dumps(data), headers=headers))
+
+    response = requests.post("http://127.0.0.1:8000/trainees/", data=json.dumps(data), headers=headers)
+    response_data = response.json()
+    if response.status_code != 201:
+        logging.debug(f"Add Trainee Response: {response_data}")
+
+        print(response)
 
 
 def add_record(data, api_key):
@@ -28,15 +35,18 @@ def add_record(data, api_key):
         "today_problems": None
     }
     """
+
     headers = {
         'authorization': f'Api-Key {api_key}',
         'Content-Type': 'application/json'
-
     }
-    print(requests.post("https://streaker.api.almiraj.xyz/records/", data=json.dumps(data), headers=headers))
 
+    response = requests.post("http://127.0.0.1:8000/records/", data=json.dumps(data), headers=headers)
+    response_data = response.json()
+    if response.status_code != 201:
+        logging.debug(f"Add Record Response: {response_data}")
+        print(response)
 
-#
 # def add_record(record_info):
 #     """
 #     Add a record to the trainee_records table.
@@ -61,7 +71,6 @@ def add_record(data, api_key):
 #         if cur.fetchone()[0] == 0:
 #             # If discord_id is not associated with a trainee, add it with default values
 #             cur.execute(
-#                 """INSERT INTO trainees (discord_id, discord_name, highest_streak, current_streak, total_days, total_problems)
 #                            VALUES (?, ?, 0, 0, 0, 0)""",
 #                 (discord_id, discord_name),
 #             )

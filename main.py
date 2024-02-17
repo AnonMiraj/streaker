@@ -38,6 +38,7 @@ async def archive(ctx):
 
     async with ctx.typing():
         messages_data = []
+        seen_trainee_ids = set()  # Set to store seen trainee IDs
         async for message in channel.history(limit=None):
             message: discord.Message = message
             data = data_extractor(str(message.content).upper())
@@ -50,13 +51,15 @@ async def archive(ctx):
                     "today_problems": data["today"],
                 }
                 messages_data.append(record_data)
-                if data["streak"] == 0:
+                trainee_id = str(message.author.id)
+                if trainee_id not in seen_trainee_ids:
                     trainee_data = {
-                        "discord_id": str(message.author.id),
+                        "discord_id": trainee_id,
                         "discord_pfp": str(message.author.display_avatar.url),
                         "discord_name": message.author.name
                     }
                     add_trainee(trainee_data, api_key)
+                    seen_trainee_ids.add(trainee_id)  # Add the trainee ID to seen set
 
         for record in reversed(messages_data):
             add_record(record, api_key)
