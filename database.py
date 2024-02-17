@@ -17,7 +17,7 @@ def add_trainee(data, api_key):
         'Content-Type': 'application/json'
     }
 
-    response = requests.post("http://127.0.0.1:8000/trainees/", data=json.dumps(data), headers=headers)
+    response = requests.post("https://streaker.api.almiraj.xyz/trainees/", data=json.dumps(data), headers=headers)
     response_data = response.json()
     if response.status_code != 201:
         logging.debug(f"Add Trainee Response: {response_data}")
@@ -41,7 +41,7 @@ def add_record(data, api_key):
         'Content-Type': 'application/json'
     }
 
-    response = requests.post("http://127.0.0.1:8000/records/", data=json.dumps(data), headers=headers)
+    response = requests.post("https://streaker.api.almiraj.xyz/records/", data=json.dumps(data), headers=headers)
     response_data = response.json()
     if response.status_code != 201:
         logging.debug(f"Add Record Response: {response_data}")
